@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Game Prediction</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+
+<body>
+    <h1>Game Predictor</h1>
+
+    <form method="POST">
+        <textarea name="last_game_results" placeholder="Enter last game results..."></textarea>
+        <button type="submit">Predict</button>
+    </form>
+
+    {% if advice or prediction is not none %}
+    <div class="prediction-advice">
+        <table class="statistics-table">
+            <thead>
+                <tr><th>Prediction</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ prediction == 1 and "2x or higher (BET NOW)" or "less than 2x (WAIT)" }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="statistics-table">
+            <thead>
+                <tr><th>Advice</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ advice }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <h2>Model Performance</h2>
+    <table class="statistics-table">
+        <tr><td>Accuracy:</td><td>87%</td></tr>
+        <tr><td>Precision:</td><td>88%</td></tr>
+        <tr><td>Recall:</td><td>86%</td></tr>
+        <tr><td>F1-score:</td><td>87%</td></tr>
+        <tr><td>Confusion Matrix:</td><td>[[33474, 42568], [33216, 42257]]</td></tr>
+    </table>
+
+    <!-- Button to open the modal -->
+    <button id="openModal">Previous Predictions</button>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h2>Previous Predictions</h2>
+            <table class="statistics-table">
+                <thead>
+                    <tr><th>Time</th><th>Multiplier prediction</th></tr>
+                </thead>
+                <tbody>
+                    {% for pred, timestamp in prev_predictions %}
+                    <tr>
+                        <td>{{ timestamp }}</td>
+                        <td>{{ pred == 1 and "2x or higher (BET NOW)" or "less than 2x (WAIT)" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Include JavaScript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
