@@ -3,6 +3,7 @@ click==8.1.4
 colorama==0.4.6
 DateTime==5.1
 Flask
+gunicorn
 importlib-metadata
 itsdangerous
 Jinja2
