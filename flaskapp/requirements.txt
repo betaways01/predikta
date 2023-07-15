@@ -20,3 +20,4 @@ tzdata
 Werkzeug
 zipp
 zope.interface
+cloudpickle
