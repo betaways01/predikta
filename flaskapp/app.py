@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
-import cloudpickle as cp
+#import cloudpickle as joblib
+import joblib
 import datetime
 import re
 import os
@@ -14,8 +15,8 @@ app = Flask(__name__)
 model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model.pkl')
 scaler_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scaler.pkl')
 
-model = cp.load(open(model_path, 'rb'))
-scaler = cp.load(open(scaler_path, 'rb'))
+model = joblib.load(model_path)
+scaler = joblib.load(scaler_path)
 
 prediction = None
 advice = ""
