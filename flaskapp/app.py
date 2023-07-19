@@ -4,7 +4,8 @@ import joblib
 import datetime
 import re
 import os
-
+import numpy as np
+import json
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -13,14 +14,24 @@ app = Flask(__name__)
 # Initialize variables
 
 model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'model.pkl')
-scaler_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scaler.pkl')
+scaler_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scaler_params.json')
 
 model = joblib.load(model_path)
-scaler = joblib.load(scaler_path)
+
+# Load the mean and variance for the features
+with open(scaler_path) as f:
+    params = json.load(f)
+mean_ = np.array([13.815946002446857, 13.655341472281862, 14.553975745300855])
+var_ = np.array([1375793.8500529677, 1294901.4013289963, 1768316.874358202])
+
 
 prediction = None
 advice = ""
 prev_predictions = []
+
+def custom_scaler(input_data):
+    return (input_data - mean_) / np.sqrt(var_)
+    
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -47,8 +58,8 @@ def index():
                         advice = "Input at least 3 values for the prediction."
                     else:
                         # Scale the data and make a prediction
-                        input_data_scaled = scaler.transform([input_data])
-                        prediction = model.predict(input_data_scaled)[0]
+                        input_data_scaled = custom_scaler(input_data)
+                        prediction = model.predict(input_data_scaled.reshape(1,-1))[0]
                         current_prediction = (prediction, datetime.datetime.now())
                         prev_predictions.append(current_prediction)
 
