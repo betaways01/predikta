@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Game Predictor - Training</title>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </head>
+
+    <body>
+        <h1>Train the Game Predictor</h1>
+
+        <form method="POST">
+            <textarea class="textarea2" name="new_data" placeholder="Enter new data..."></textarea>
+            <button type="submit">Train</button>
+        </form>
+
+        {% if advice %}
+        <div class="advice">
+            <p>{{ advice }}</p>
+        </div>
+        {% endif %}
+
+        {% if model_performance %}
+        <h2>Model Performance</h2>
+        <table class="statistics-table">
+            <thead>
+                <tr>
+                    <th scope="col">Statistical Metric</th>
+                    <th scope="col">Percentage Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Accuracy</td>
+                    <td>{{ model_performance['Accuracy'] }}</td>
+                </tr>
+                <tr>
+                    <td>Precision</td>
+                    <td>{{ model_performance['Precision'] }}</td>
+                </tr>
+                <tr>
+                    <td>Recall</td>
+                    <td>{{ model_performance['Recall'] }}</td>
+                </tr>
+                <tr>
+                    <td>F1-score</td>
+                    <td>{{ model_performance['F1-score'] }}</td>
+                </tr>
+                <tr>
+                    <td>Confusion Matrix</td>
+                    <td>{{ model_performance['Confusion Matrix'] }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        {% endif %}
+
+        <!-- Back to prediction button -->
+        <button onclick="window.location.href='/'">Back to Prediction</button>
+
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </body>
+</html>
