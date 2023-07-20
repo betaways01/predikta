@@ -6,6 +6,12 @@ import re
 import os
 import numpy as np
 import json
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from lightgbm import LGBMClassifier #type: ignore
+from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import SMOTE
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -22,6 +28,61 @@ scaler = joblib.load(scaler_path)
 prediction = None
 advice = ""
 prev_predictions = []
+
+@app.route('/train', methods=['POST'])
+def train():
+    global model, scaler, advice
+
+    input_data = request.form.get('new_data') # type: ignore
+    if input_data:
+        if re.match("^[0-9., ]*$", input_data) is None:
+            advice = "Please enter numbers only, separated by commas or spaces."
+        else:
+            try:
+                input_data = [float(x) for x in input_data.replace(" ", "").split(',') if x]
+            except ValueError:
+                advice = "Invalid data format. Ensure your input is in the correct format."
+            else:
+                # Load the existing data
+                data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'multipliers.csv')
+                data = pd.read_csv(data_path)
+
+                # Append new data
+                new_data = pd.DataFrame(input_data, columns=['Multiplier'])
+                data = pd.concat([data, new_data], ignore_index=True)
+
+                # Preprocess the data
+                data['x2_or_wait'] = (data['Multiplier'] >= 2).astype(int)
+                for i in range(1, 4):
+                    data[f'lag_{i}'] = data['Multiplier'].shift(i)
+                data = data.dropna()
+
+                # Split the data into features (X) and target variable (y)
+                X = data.drop(['x2_or_wait', 'Multiplier'], axis=1)
+                y = data['x2_or_wait']
+
+                # Balance the classes
+                smote = SMOTE(random_state=42)
+                X_smote, y_smote = smote.fit_resample(X, y)
+
+                # Standardize the features
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(X_smote)
+
+                # Split the data into training and test sets
+                X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_smote, test_size=0.2, random_state=42)
+
+                # Train a LightGBM model
+                model = LGBMClassifier(n_jobs=1)
+                model.fit(X_train, y_train)
+
+                # Save the model and the scaler to disk
+                joblib.dump(model, 'model.pkl')
+                joblib.dump(scaler, 'scaler.pkl')
+
+                advice = "Model training successful!"
+
+    return render_template('train.html', advice=advice)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
