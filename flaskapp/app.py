@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-#import cloudpickle as joblib
+from sklearn.metrics import classification_report, confusion_matrix
 import joblib
 import datetime
 import re
@@ -11,7 +11,6 @@ from sklearn.model_selection import train_test_split
 from lightgbm import LGBMClassifier #type: ignore
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -28,10 +27,11 @@ scaler = joblib.load(scaler_path)
 prediction = None
 advice = ""
 prev_predictions = []
+model_performance = {}
 
-@app.route('/train', methods=['POST'])
+@app.route('/train', methods=['GET', 'POST'])
 def train():
-    global model, scaler, advice
+    global model, scaler, advice, model_performance
 
     input_data = request.form.get('new_data') # type: ignore
     if input_data:
@@ -63,11 +63,11 @@ def train():
 
                 # Balance the classes
                 smote = SMOTE(random_state=42)
-                X_smote, y_smote = smote.fit_resample(X, y)
+                X_smote, y_smote = smote.fit_resample(X, y) # type: ignore
 
                 # Standardize the features
                 scaler = StandardScaler()
-                X_scaled = scaler.fit_transform(X_smote)
+                X_scaled = scaler.fit_transform(X_smote) # type: ignore
 
                 # Split the data into training and test sets
                 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_smote, test_size=0.2, random_state=42)
@@ -76,17 +76,28 @@ def train():
                 model = LGBMClassifier(n_jobs=1)
                 model.fit(X_train, y_train)
 
+                # Calculate model performance
+                y_pred = model.predict(X_test)
+                report = classification_report(y_test, y_pred, output_dict=True)
+                model_performance = {
+                    'Accuracy': report['accuracy'], # type: ignore
+                    'Precision': report['1']['precision'], # type: ignore
+                    'Recall': report['1']['recall'], # type: ignore
+                    'F1-score': report['1']['f1-score'], # type: ignore
+                    'Confusion Matrix': confusion_matrix(y_test, y_pred).tolist(),
+                }
+
                 # Save the model and the scaler to disk
                 joblib.dump(model, 'model.pkl')
                 joblib.dump(scaler, 'scaler.pkl')
 
                 advice = "Model training successful!"
 
-    return render_template('train.html', advice=advice)
+    return render_template('train.html', advice=advice, stats=model_performance)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global model, prediction, stats, prev_predictions, advice
+    global model, prediction, stats, prev_predictions, advice, model_performance
 
     advice=""
     prediction = None
@@ -120,7 +131,7 @@ def index():
                         else:
                             advice = "Considering your recent game results, the next prediction is likely to be Less than 2 (WAIT)"
 
-    return render_template('index.html', advice=advice, prediction=prediction, prev_predictions=prev_predictions)
+    return render_template('index.html', advice=advice, prediction=prediction, prev_predictions=prev_predictions, model_performance=model_performance)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
