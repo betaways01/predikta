@@ -43,7 +43,7 @@ form {
 }
 
 textarea {
-    width: 10%;
+    width: 20%;
     height: 50px;
     margin-bottom: 10px;
     border: none;
@@ -53,6 +53,7 @@ textarea {
     background-color: #433b3b;
     color: #eee;
 }
+
 
 button {
     padding: 10px 20px;

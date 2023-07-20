@@ -10,7 +10,7 @@
         <h1>Train the Game Predictor</h1>
 
         <form method="POST">
-            <textarea name="new_data" placeholder="Enter new data..."></textarea>
+            <textarea class="textarea2" name="new_data" placeholder="Enter new data..."></textarea>
             <button type="submit">Train</button>
         </form>
 
@@ -20,15 +20,39 @@
         </div>
         {% endif %}
 
-        {% if stats %}
+        {% if model_performance %}
         <h2>Model Performance</h2>
         <table class="statistics-table">
-            <tr><td>Accuracy:</td><td>{{ stats.accuracy }}</td></tr>
-            <tr><td>Precision:</td><td>{{ stats.precision }}</td></tr>
-            <tr><td>Recall:</td><td>{{ stats.recall }}</td></tr>
-            <tr><td>F1-score:</td><td>{{ stats.f1_score }}</td></tr>
-            <tr><td>Confusion Matrix:</td><td>{{ stats.confusion_matrix }}</td></tr>
+            <thead>
+                <tr>
+                    <th scope="col">Statistical Metric</th>
+                    <th scope="col">Percentage Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Accuracy</td>
+                    <td>{{ model_performance['Accuracy'] }}</td>
+                </tr>
+                <tr>
+                    <td>Precision</td>
+                    <td>{{ model_performance['Precision'] }}</td>
+                </tr>
+                <tr>
+                    <td>Recall</td>
+                    <td>{{ model_performance['Recall'] }}</td>
+                </tr>
+                <tr>
+                    <td>F1-score</td>
+                    <td>{{ model_performance['F1-score'] }}</td>
+                </tr>
+                <tr>
+                    <td>Confusion Matrix</td>
+                    <td>{{ model_performance['Confusion Matrix'] }}</td>
+                </tr>
+            </tbody>
         </table>
+        
         {% endif %}
 
         <!-- Back to prediction button -->

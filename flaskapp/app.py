@@ -80,12 +80,13 @@ def train():
                 y_pred = model.predict(X_test)
                 report = classification_report(y_test, y_pred, output_dict=True)
                 model_performance = {
-                    'Accuracy': report['accuracy'], # type: ignore
-                    'Precision': report['1']['precision'], # type: ignore
-                    'Recall': report['1']['recall'], # type: ignore
-                    'F1-score': report['1']['f1-score'], # type: ignore
-                    'Confusion Matrix': confusion_matrix(y_test, y_pred).tolist(),
+                    'Accuracy': round(report['accuracy']*100, 2), # type: ignore
+                    'Precision': round(report['1']['precision']*100, 2), # type: ignore
+                    'Recall': round(report['1']['recall']*100, 2), # type: ignore
+                    'F1-score': round(report['1']['f1-score']*100, 2), # type: ignore
+                    # 'Confusion Matrix': confusion_matrix(y_test, y_pred).tolist(), # type: ignore
                 }
+
 
                 # Save the model and the scaler to disk
                 joblib.dump(model, 'model.pkl')
@@ -93,7 +94,7 @@ def train():
 
                 advice = "Model training successful!"
 
-    return render_template('train.html', advice=advice, stats=model_performance)
+    return render_template('train.html', advice=advice, model_performance=model_performance)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
